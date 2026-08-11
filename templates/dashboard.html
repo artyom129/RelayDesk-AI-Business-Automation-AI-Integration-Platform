@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RelayDesk AI</title>
+<style>
+:root{--bg:#060a12;--panel:#0c1320;--panel2:#111a2a;--line:#22304a;--text:#f1f6ff;--muted:#8ea2bd;--cyan:#55d6ff;--violet:#8b78ff;--green:#39e39b;--red:#ff6684;--amber:#ffc15c}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 15% 0,#14284b 0,#060a12 35%);color:var(--text);font-family:Inter,ui-sans-serif,system-ui}
+.wrap{max-width:1450px;margin:auto;padding:30px}.top{display:flex;justify-content:space-between;gap:20px;align-items:center}.brand{font-size:31px;font-weight:900}.brand span{color:var(--cyan)}.sub{color:var(--muted);margin-top:5px}.online{padding:9px 13px;border-radius:999px;border:1px solid #1d644c;background:#0e2a22;color:var(--green);font-weight:700}
+.grid{display:grid;grid-template-columns:repeat(6,1fr);gap:13px;margin-top:22px}.card{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:17px;padding:17px;box-shadow:0 12px 30px #0004}.lab{font-size:12px;color:var(--muted)}.val{font-size:28px;font-weight:900;margin-top:6px}
+.two{display:grid;grid-template-columns:1.25fr .75fr;gap:14px;margin-top:14px}.section-title{font-size:17px;font-weight:800;margin-bottom:13px}
+.pipeline{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.node{padding:10px 12px;border-radius:11px;border:1px solid var(--line);background:#09111d;font-size:12px}.arrow{color:var(--cyan);font-weight:900}
+table{width:100%;border-collapse:collapse;font-size:12px}th{text-align:left;color:var(--muted);padding:9px;border-bottom:1px solid var(--line)}td{padding:10px 9px;border-bottom:1px solid #182338}.status{padding:4px 8px;border-radius:999px;font-weight:800}.success{background:#10352b;color:#65edb2}.failed{background:#401b27;color:#ff90a5}.running{background:#15324a;color:#78caff}
+.event{padding:10px 0;border-bottom:1px solid #182338}.event b{font-size:12px}.event div{font-size:11px;color:var(--muted);margin-top:3px}.pill{padding:4px 7px;border-radius:999px;background:#17253b;color:#a9c5e7}
+button{cursor:pointer;border:0;border-radius:10px;padding:10px 14px;color:white;font-weight:800;background:linear-gradient(90deg,#477cff,#8b78ff)}
+.hero{display:flex;justify-content:space-between;align-items:center;gap:14px}.hero p{margin:5px 0 0;color:var(--muted);max-width:850px;line-height:1.55}
+@media(max-width:1000px){.grid{grid-template-columns:repeat(2,1fr)}.two{grid-template-columns:1fr}.wrap{padding:18px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <div class="brand">RelayDesk <span>AI</span></div>
+      <div class="sub">Business Automation · CRM Sync · AI Qualification · Email · Sheets · Chatbot</div>
+    </div>
+    <div class="online">● orchestration online</div>
+  </div>
+
+  <div class="grid">
+    <div class="card"><div class="lab">Workflow runs</div><div class="val">{{stats.runs}}</div></div>
+    <div class="card"><div class="lab">Successful</div><div class="val">{{stats.success}}</div></div>
+    <div class="card"><div class="lab">Failed</div><div class="val">{{stats.failed}}</div></div>
+    <div class="card"><div class="lab">CRM contacts</div><div class="val">{{stats.contacts}}</div></div>
+    <div class="card"><div class="lab">Workflows</div><div class="val">{{stats.workflows}}</div></div>
+    <div class="card"><div class="lab">Dead letters</div><div class="val">{{stats.dlq}}</div></div>
+  </div>
+
+  <div class="card" style="margin-top:14px">
+    <div class="hero">
+      <div>
+        <div class="section-title">AI Lead Intake & CRM Sync</div>
+        <p>One event enters through a webhook, gets normalized and AI-qualified, then synchronizes to CRM and spreadsheet destinations before sending customer and admin notifications.</p>
+      </div>
+      <form method="post" action="/demo/run"><button>Run live demo</button></form>
+    </div>
+    <div class="pipeline" style="margin-top:17px">
+      <div class="node">Webhook / Form</div><div class="arrow">→</div>
+      <div class="node">Normalize</div><div class="arrow">→</div>
+      <div class="node">AI Qualify</div><div class="arrow">→</div>
+      <div class="node">CRM Upsert</div><div class="arrow">→</div>
+      <div class="node">Sheets Log</div><div class="arrow">→</div>
+      <div class="node">Email</div><div class="arrow">→</div>
+      <div class="node">Chatbot Alert</div>
+    </div>
+  </div>
+
+  <div class="two">
+    <div class="card">
+      <div class="section-title">Recent workflow runs</div>
+      <table>
+        <tr><th>ID</th><th>Workflow</th><th>Status</th><th>Started</th><th>Error</th></tr>
+        {% for r in runs %}
+        <tr>
+          <td>#{{r.id}}</td><td>{{r.workflow_id}}</td>
+          <td><span class="status {{r.status}}">{{r.status}}</span></td>
+          <td>{{r.started_at.strftime('%H:%M:%S')}}</td>
+          <td>{{r.error[:55]}}</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+    <div class="card">
+      <div class="section-title">Audit stream</div>
+      {% for e in events %}
+      <div class="event"><b>{{e.event_type}}</b><div>{{e.detail}}</div></div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="two">
+    <div class="card">
+      <div class="section-title">CRM contacts created by automation</div>
+      <table>
+        <tr><th>Name</th><th>Company</th><th>Score</th><th>Stage</th><th>Source</th></tr>
+        {% for c in contacts %}
+        <tr><td>{{c.name}}</td><td>{{c.company}}</td><td><span class="pill">{{c.score}}/100</span></td><td>{{c.stage}}</td><td>{{c.source}}</td></tr>
+        {% endfor %}
+      </table>
+    </div>
+    <div class="card">
+      <div class="section-title">Connector layer</div>
+      <div class="pipeline">
+        <div class="node">REST / Webhooks</div>
+        <div class="node">CRM</div>
+        <div class="node">Google Sheets</div>
+        <div class="node">Email</div>
+        <div class="node">AI API</div>
+        <div class="node">Chatbot</div>
+      </div>
+      <p class="sub" style="line-height:1.6;margin-top:14px">Connectors share one interface, so a real HubSpot, Pipedrive, Gmail, Google Sheets, Telegram, Slack or OpenAI adapter can replace the demo adapter without changing workflow logic.</p>
+    </div>
+  </div>
+</div>
+</body>
+</html>
